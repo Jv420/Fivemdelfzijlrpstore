@@ -48,6 +48,30 @@ export const products: StoreProduct[] = [
     deliveryType: 'priority',
     command: 'add_principal identifier.license:{license} group.priority',
   },
+  {
+    id: 'donateur_garage_30d',
+    name: 'Donateur garage toegang - 30 dagen',
+    description: 'Toegang tot een speciale garage met cosmetische/community voertuigen. Geen geldwaarde of pay-to-win voordeel.',
+    priceCents: 699,
+    deliveryType: 'vehicle_cosmetic',
+    command: 'add_principal identifier.license:{license} group.donateurgarage',
+  },
+  {
+    id: 'cosmetic_vehicle_skin',
+    name: 'Cosmetic vehicle skin aanvraag',
+    description: 'Aanvraag voor een niet-pay-to-win voertuigskin/livery. Staff keurt ongepaste of oneerlijke aanvragen af.',
+    priceCents: 799,
+    deliveryType: 'vehicle_cosmetic',
+    command: 'delfzijl_vehiclecosmetic {license}',
+  },
+  {
+    id: 'showroom_slot',
+    name: 'Showroom showcase slot',
+    description: 'Laat jouw voertuig tijdelijk in een supporter showroom tonen. Alleen cosmetisch/display.',
+    priceCents: 499,
+    deliveryType: 'vehicle_cosmetic',
+    command: 'delfzijl_showroomslot {license}',
+  },
 ];
 
 export function getProduct(productId: string) {
