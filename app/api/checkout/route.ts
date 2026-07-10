@@ -4,9 +4,7 @@ import { getProduct } from '@/lib/products';
 import { getRequiredEnv, getSiteUrl } from '@/lib/env';
 import { logger } from '@/lib/logger';
 
-const stripe = new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'), {
-  apiVersion: '2025-06-30.basil',
-});
+const stripe = new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'));
 
 function isValidLicense(value: string) {
   return /^[a-zA-Z0-9:_-]{8,128}$/.test(value);
