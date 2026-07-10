@@ -35,4 +35,20 @@ jobs:
         run: npm install --no-audit --no-fund
 
       - name: Build
-        run: npm run build
+        continue-on-error: true
+        run: npm run build > build.log 2>&1
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build-log
+          path: build.log
+          retention-days: 7
+
+      - name: Print build log
+        if: always()
+        run: cat build.log
+
+      - name: Verify build result
+        run: grep -q "Compiled successfully" build.log
