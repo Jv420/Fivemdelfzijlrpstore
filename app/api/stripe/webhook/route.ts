@@ -7,7 +7,9 @@ import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
-const stripe = new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'));
+function getStripe() {
+  return new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'));
+}
 
 export async function POST(request: Request) {
   const body = await request.text();
@@ -22,6 +24,7 @@ export async function POST(request: Request) {
   let event: Stripe.Event;
 
   try {
+    const stripe = getStripe();
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (error) {
     logger.warn('Invalid Stripe webhook signature', { error: error instanceof Error ? error.message : String(error) });
