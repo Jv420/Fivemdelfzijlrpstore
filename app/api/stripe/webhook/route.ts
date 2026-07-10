@@ -35,13 +35,12 @@ export async function POST(request: Request) {
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object as Stripe.Checkout.Session;
       const productId = session.metadata?.productId || '';
-      const license = session.metadata?.license || '';
-      const playerName = session.metadata?.playerName || '';
+      const playerName = session.metadata?.playerName?.trim() || '';
       const product = getProduct(productId);
 
-      if (!product || !license) {
-        logger.warn('Webhook missing valid product or license', { sessionId: session.id, productId });
-        return NextResponse.json({ error: 'Product of license ontbreekt' }, { status: 400 });
+      if (!product || !playerName) {
+        logger.warn('Webhook missing valid product or player name', { sessionId: session.id, productId });
+        return NextResponse.json({ error: 'Product of spelernaam ontbreekt' }, { status: 400 });
       }
 
       if (session.payment_status !== 'paid') {
@@ -49,18 +48,16 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true, ignored: 'payment_not_paid' });
       }
 
-      const deliveryCommand = product.command.replaceAll('{license}', license);
       const pool = getPool();
 
       await pool.execute(
         `insert into pending_orders
           (stripe_session_id, product_id, product_name, player_license, player_name, delivery_command, status, amount_total, currency)
          values
-          (:stripe_session_id, :product_id, :product_name, :player_license, :player_name, :delivery_command, 'pending', :amount_total, :currency)
+          (:stripe_session_id, :product_id, :product_name, null, :player_name, :delivery_command, 'pending', :amount_total, :currency)
          on duplicate key update
           product_id = values(product_id),
           product_name = values(product_name),
-          player_license = values(player_license),
           player_name = values(player_name),
           delivery_command = values(delivery_command),
           amount_total = values(amount_total),
@@ -69,15 +66,14 @@ export async function POST(request: Request) {
           stripe_session_id: session.id,
           product_id: product.id,
           product_name: product.name,
-          player_license: license,
           player_name: playerName,
-          delivery_command: deliveryCommand,
+          delivery_command: product.command,
           amount_total: session.amount_total || product.priceCents,
           currency: session.currency || 'eur',
         }
       );
 
-      logger.info('Order queued from Stripe webhook', { sessionId: session.id, productId: product.id });
+      logger.info('Order queued from Stripe webhook', { sessionId: session.id, productId: product.id, playerName });
     }
 
     return NextResponse.json({ received: true });
