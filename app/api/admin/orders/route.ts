@@ -28,7 +28,8 @@ export async function POST(request: Request) {
       `update pending_orders
        set status = :status,
            delivery_error = :delivery_error,
-           delivered_at = :delivered_at
+           delivered_at = :delivered_at,
+           processing_at = null
        where id = :id`,
       {
         id,
