@@ -5,7 +5,7 @@ import { getPool } from '@/lib/mysql';
 
 export const dynamic = 'force-dynamic';
 
-type OrderStatus = 'pending' | 'delivered' | 'failed';
+type OrderStatus = 'pending' | 'processing' | 'delivered' | 'failed';
 
 type OrderRow = RowDataPacket & {
   id: number;
@@ -18,6 +18,8 @@ type OrderRow = RowDataPacket & {
   amount_total: number;
   currency: string;
   delivery_error: string | null;
+  delivery_attempts: number;
+  processing_at: Date | null;
   created_at: Date;
   delivered_at: Date | null;
 };
@@ -27,7 +29,7 @@ type CountRow = RowDataPacket & {
   total: number;
 };
 
-const allowedStatuses = new Set<OrderStatus>(['pending', 'delivered', 'failed']);
+const allowedStatuses = new Set<OrderStatus>(['pending', 'processing', 'delivered', 'failed']);
 
 function money(amount: number, currency: string) {
   return new Intl.NumberFormat('nl-NL', {
@@ -59,7 +61,8 @@ export default async function AdminPage({
   const [orders] = status
     ? await pool.execute<OrderRow[]>(
         `select id, stripe_session_id, product_id, product_name, player_license, player_name,
-                status, amount_total, currency, delivery_error, created_at, delivered_at
+                status, amount_total, currency, delivery_error, delivery_attempts, processing_at,
+                created_at, delivered_at
          from pending_orders
          where status = :status
          order by created_at desc
@@ -68,14 +71,16 @@ export default async function AdminPage({
       )
     : await pool.execute<OrderRow[]>(
         `select id, stripe_session_id, product_id, product_name, player_license, player_name,
-                status, amount_total, currency, delivery_error, created_at, delivered_at
+                status, amount_total, currency, delivery_error, delivery_attempts, processing_at,
+                created_at, delivered_at
          from pending_orders
          order by created_at desc
          limit 100`
       );
 
-  const counts: Record<OrderStatus, number> = { pending: 0, delivered: 0, failed: 0 };
+  const counts: Record<OrderStatus, number> = { pending: 0, processing: 0, delivered: 0, failed: 0 };
   for (const row of countRows) counts[row.status] = Number(row.total);
+  const totalOrders = counts.pending + counts.processing + counts.delivered + counts.failed;
 
   return (
     <main className="wrap admin-shell">
@@ -93,11 +98,12 @@ export default async function AdminPage({
       {params.updated && <div className="notice success">Orderstatus is bijgewerkt.</div>}
       {params.error && <div className="notice danger">De actie kon niet worden uitgevoerd.</div>}
 
-      <section className="stats-grid">
+      <section className="stats-grid five-columns">
         <a className="stat-card" href="/admin?status=pending"><strong>{counts.pending}</strong><span>Pending</span></a>
+        <a className="stat-card" href="/admin?status=processing"><strong>{counts.processing}</strong><span>Processing</span></a>
         <a className="stat-card" href="/admin?status=delivered"><strong>{counts.delivered}</strong><span>Delivered</span></a>
         <a className="stat-card" href="/admin?status=failed"><strong>{counts.failed}</strong><span>Failed</span></a>
-        <a className="stat-card" href="/admin"><strong>{counts.pending + counts.delivered + counts.failed}</strong><span>Alle orders</span></a>
+        <a className="stat-card" href="/admin"><strong>{totalOrders}</strong><span>Alle orders</span></a>
       </section>
 
       <section className="card table-card">
@@ -110,6 +116,7 @@ export default async function AdminPage({
                 <th>Speler</th>
                 <th>Bedrag</th>
                 <th>Status</th>
+                <th>Pogingen</th>
                 <th>Aangemaakt</th>
                 <th>Fout</th>
                 <th>Acties</th>
@@ -123,6 +130,7 @@ export default async function AdminPage({
                   <td><strong>{order.player_name || 'Onbekend'}</strong><small>{order.player_license}</small></td>
                   <td>{money(order.amount_total, order.currency)}</td>
                   <td><span className={`status-pill ${order.status}`}>{order.status}</span></td>
+                  <td>{order.delivery_attempts}</td>
                   <td>{new Date(order.created_at).toLocaleString('nl-NL')}</td>
                   <td className="error-cell">{order.delivery_error || '—'}</td>
                   <td>
@@ -153,7 +161,7 @@ export default async function AdminPage({
                 </tr>
               ))}
               {orders.length === 0 && (
-                <tr><td colSpan={8} className="empty-state">Geen orders gevonden.</td></tr>
+                <tr><td colSpan={9} className="empty-state">Geen orders gevonden.</td></tr>
               )}
             </tbody>
           </table>
