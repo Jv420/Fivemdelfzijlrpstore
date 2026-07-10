@@ -4,10 +4,10 @@ export default function HomePage() {
   return (
     <main className="wrap">
       <section className="hero">
-        <span className="badge">Officiële Delfzijl RP Supporter Webshop</span>
-        <h1 className="title">Support Delfzijl RP</h1>
-        <p className="muted">Koop veilige supporter perks via Stripe iDEAL of card. Rewards worden automatisch klaargezet voor delivery in-game.</p>
-        <div className="notice">Deze store is ingericht voor supporter ranks en cosmetische voordelen. Direct geld, zwart geld en wapens worden bewust niet als standaardproducten aangeboden.</div>
+        <span className="badge">Officiële Delfzijl RP Webshop</span>
+        <h1 className="title">Steun Delfzijl RP</h1>
+        <p className="muted">Steun de verdere ontwikkeling van Delfzijl RP en ontvang exclusieve supportervoordelen. Betalingen worden veilig verwerkt via Stripe met iDEAL en creditcard.</p>
+        <div className="notice">Na een succesvolle betaling wordt je bestelling automatisch gekoppeld aan je FiveM-account en klaargezet voor levering in-game. Bedankt voor jouw steun aan de Delfzijl RP-community.</div>
       </section>
 
       <section className="grid">
