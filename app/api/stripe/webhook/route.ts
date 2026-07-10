@@ -7,9 +7,7 @@ import { logger } from '@/lib/logger';
 
 export const runtime = 'nodejs';
 
-const stripe = new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'), {
-  apiVersion: '2025-06-30.basil',
-});
+const stripe = new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'));
 
 export async function POST(request: Request) {
   const body = await request.text();
