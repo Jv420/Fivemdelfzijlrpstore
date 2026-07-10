@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import { NextResponse } from 'next/server';
 import { getProduct } from '@/lib/products';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getPool } from '@/lib/mysql';
 
 export const runtime = 'nodejs';
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Ongeldige Stripe signature' }, { status: 400 });
   }
 
@@ -38,8 +38,21 @@ export async function POST(request: Request) {
     }
 
     const deliveryCommand = product.command.replaceAll('{license}', license);
+    const pool = getPool();
 
-    const { error } = await supabaseAdmin.from('pending_orders').upsert(
+    await pool.execute(
+      `insert into pending_orders
+        (stripe_session_id, product_id, product_name, player_license, player_name, delivery_command, status, amount_total, currency)
+       values
+        (:stripe_session_id, :product_id, :product_name, :player_license, :player_name, :delivery_command, 'pending', :amount_total, :currency)
+       on duplicate key update
+        product_id = values(product_id),
+        product_name = values(product_name),
+        player_license = values(player_license),
+        player_name = values(player_name),
+        delivery_command = values(delivery_command),
+        amount_total = values(amount_total),
+        currency = values(currency)`,
       {
         stripe_session_id: session.id,
         product_id: product.id,
@@ -47,16 +60,10 @@ export async function POST(request: Request) {
         player_license: license,
         player_name: playerName,
         delivery_command: deliveryCommand,
-        status: 'pending',
         amount_total: session.amount_total || product.priceCents,
         currency: session.currency || 'eur',
-      },
-      { onConflict: 'stripe_session_id' }
+      }
     );
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
   }
 
   return NextResponse.json({ received: true });
