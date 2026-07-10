@@ -8,7 +8,7 @@ Eigen webshop voor `webshop.delfzijlrp.nl` met Stripe iDEAL/card en een FiveM de
 Vercel Next.js webshop
   -> Stripe Checkout
   -> Stripe webhook
-  -> Supabase pending_orders queue
+  -> MySQL/MariaDB pending_orders queue
   -> FiveM resource pollt uitgaand naar Vercel
   -> server voert veilige delivery uit
 ```
@@ -22,15 +22,15 @@ Verkoop geen direct pay-to-win geld, zwart geld of wapens voor echt geld. Gebrui
 ## Mappen
 
 - `app/` - Next.js/Vercel webshop + API routes
-- `lib/` - producten en Supabase helpers
-- `supabase/schema.sql` - database tabellen
+- `lib/` - producten en MySQL helper
+- `mysql/schema.sql` - MySQL/MariaDB database tabel
 - `fivem/delfzijlrp_shopbridge/` - FiveM resource
 
 ## Benodigd
 
 - Vercel project
 - Stripe account met iDEAL/card
-- Supabase project
+- MySQL/MariaDB database die bereikbaar is vanaf Vercel
 - FiveM ESX/QB server
 
 ## Environment variables op Vercel
@@ -39,10 +39,16 @@ Verkoop geen direct pay-to-win geld, zwart geld of wapens voor echt geld. Gebrui
 NEXT_PUBLIC_SITE_URL=https://webshop.delfzijlrp.nl
 STRIPE_SECRET_KEY=sk_live_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
-SUPABASE_URL=https://xxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=xxx
 FIVEM_BRIDGE_SECRET=maak-een-lange-random-secret
+
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=delfzijlrp_store
+MYSQL_PASSWORD=sterk-wachtwoord
+MYSQL_DATABASE=delfzijlrp
 ```
+
+Let op: `MYSQL_HOST=127.0.0.1` werkt alleen lokaal. Op Vercel moet dit de publieke hostnaam/IP van jouw database zijn, of een externe databaseprovider. Als jouw database alleen bereikbaar is vanaf je gamehost/HeidiSQL en niet vanaf Vercel, dan moet je database toegang/whitelist aanpassen of een externe MySQL database gebruiken.
 
 ## Installatie webshop
 
@@ -67,9 +73,15 @@ Event:
 checkout.session.completed
 ```
 
-## Supabase
+## MySQL/MariaDB
 
-Run `supabase/schema.sql` in Supabase SQL editor.
+Open HeidiSQL en run:
+
+```sql
+mysql/schema.sql
+```
+
+Hiermee wordt de tabel `pending_orders` gemaakt.
 
 ## FiveM installatie
 
