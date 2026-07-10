@@ -51,7 +51,7 @@ export default function HomePage() {
             <span className="eyebrow">Onze webshop</span>
             <h2>Kies jouw voordeel</h2>
           </div>
-          <p>Vul je FiveM license en spelernaam in. Daarna word je veilig doorgestuurd naar Stripe.</p>
+          <p>Vul exact dezelfde spelernaam in als je op de server gebruikt. Zorg dat je online bent wanneer de bestelling wordt geleverd.</p>
         </div>
 
         <div className="grid product-grid">
@@ -75,17 +75,12 @@ export default function HomePage() {
               <input type="hidden" name="productId" value={product.id} />
 
               <label className="field-label">
-                FiveM license identifier
-                <input name="license" placeholder="license:123456789abcdef" required />
-              </label>
-
-              <label className="field-label">
-                Spelernaam
-                <input name="playerName" placeholder="Jouw RP-naam" required />
+                Exacte spelernaam
+                <input name="playerName" placeholder="Jouw naam op de FiveM-server" maxLength={40} required />
               </label>
 
               <button className="btn" type="submit">Veilig afrekenen</button>
-              <small className="secure-note">Beveiligde betaling via Stripe</small>
+              <small className="secure-note">Beveiligde betaling via Stripe · levering op spelernaam</small>
             </form>
           ))}
         </div>
