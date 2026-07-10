@@ -1,0 +1,40 @@
+name: Build verification
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      STRIPE_SECRET_KEY: sk_test_51_dummy_build_key
+      STRIPE_WEBHOOK_SECRET: whsec_dummy_build_secret
+      FIVEM_BRIDGE_SECRET: dummy_bridge_secret_for_build_only_123456789
+      ADMIN_PASSWORD: dummy_admin_password_for_build_only_123456789
+      MYSQL_HOST: 127.0.0.1
+      MYSQL_PORT: 3306
+      MYSQL_USER: build_user
+      MYSQL_PASSWORD: build_password
+      MYSQL_DATABASE: build_database
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build
+        run: npm run build
