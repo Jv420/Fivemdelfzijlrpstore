@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabase';
+import { getPool } from '@/lib/mysql';
 
 function authorized(request: Request) {
   const expected = process.env.FIVEM_BRIDGE_SECRET;
@@ -12,16 +12,14 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data, error } = await supabaseAdmin
-    .from('pending_orders')
-    .select('id, product_id, product_name, player_license, player_name, delivery_command')
-    .eq('status', 'pending')
-    .order('created_at', { ascending: true })
-    .limit(10);
+  const pool = getPool();
+  const [rows] = await pool.execute(
+    `select id, product_id, product_name, player_license, player_name, delivery_command
+     from pending_orders
+     where status = 'pending'
+     order by created_at asc
+     limit 10`
+  );
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  return NextResponse.json({ orders: data || [] });
+  return NextResponse.json({ orders: rows });
 }
