@@ -8,7 +8,9 @@ Config.PollIntervalSeconds = 45
 -- Voeg hier alleen commands toe die je zelf vertrouwt.
 Config.AllowedCommandPrefixes = {
   'add_principal ',
-  'delfzijl_customplate '
+  'delfzijl_customplate ',
+  'delfzijl_vehiclecosmetic ',
+  'delfzijl_showroomslot '
 }
 
 Config.Debug = true
