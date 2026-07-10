@@ -4,7 +4,9 @@ import { getProduct } from '@/lib/products';
 import { getRequiredEnv, getSiteUrl } from '@/lib/env';
 import { logger } from '@/lib/logger';
 
-const stripe = new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'));
+function getStripe() {
+  return new Stripe(getRequiredEnv('STRIPE_SECRET_KEY'));
+}
 
 function isValidLicense(value: string) {
   return /^[a-zA-Z0-9:_-]{8,128}$/.test(value);
@@ -35,6 +37,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Productprijs is lager dan het veilige Stripe minimum' }, { status: 400 });
     }
 
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       payment_method_types: ['ideal', 'card'],
