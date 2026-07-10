@@ -3,8 +3,8 @@ create table if not exists pending_orders (
   stripe_session_id varchar(255) not null,
   product_id varchar(100) not null,
   product_name varchar(255) not null,
-  player_license varchar(128) not null,
-  player_name varchar(100) null,
+  player_license varchar(128) null,
+  player_name varchar(100) not null,
   delivery_command text not null,
   status enum('pending','processing','delivered','failed') not null default 'pending',
   amount_total int unsigned not null,
@@ -18,5 +18,6 @@ create table if not exists pending_orders (
   unique key uq_pending_orders_stripe_session_id (stripe_session_id),
   key idx_pending_orders_status_created (status, created_at),
   key idx_pending_orders_processing_at (processing_at),
+  key idx_pending_orders_player_name (player_name),
   key idx_pending_orders_player_license (player_license)
 ) engine=InnoDB default charset=utf8mb4 collate=utf8mb4_unicode_ci;
